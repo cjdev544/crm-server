@@ -1,0 +1,31 @@
+{
+  "name": "crm-server",
+  "version": "1.0.0",
+  "description": "server crm in apollo",
+  "main": "index.js",
+  "author": "CjDev",
+  "license": "MIT",
+  "scripts": {
+    "start": "node ./src",
+    "dev": "nodemon ./src",
+    "lint": "eslint . --fix"
+  },
+  "dependencies": {
+    "apollo-server": "^2.22.2",
+    "bcrypt": "^5.0.1",
+    "dotenv": "^8.2.0",
+    "graphql": "^15.5.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.12.3",
+    "validator": "^13.5.2"
+  },
+  "devDependencies": {
+    "eslint": "^7.23.0",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.3.1",
+    "prettier": "^2.2.1"
+  }
+}
