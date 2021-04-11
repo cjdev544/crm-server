@@ -16,7 +16,10 @@ const server = () => {
       // Validate token
       if (token) {
         try {
-          const data = jwt.verify(token, process.env.PRIVATE_KEY);
+          const data = jwt.verify(
+            token.replace('Bearer ', ''),
+            process.env.PRIVATE_KEY
+          );
           return { ...data };
         } catch (err) {
           console.log(err);

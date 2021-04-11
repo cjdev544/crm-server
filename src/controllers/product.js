@@ -4,12 +4,19 @@ const createProductController = async (input) => {
   try {
     // Validate if product exists
     const productExist = await Product.findOne({ name: input.name });
-    if (productExist)
-      throw new Error(`Ya existe un producto con el nombre '${input.name}'`);
+    if (productExist) {
+      return {
+        ok: false,
+        err: `Ya existe un producto con el nombre '${input.name}'`,
+      };
+    }
     // Save product in Database
     const product = new Product(input);
     await product.save();
-    return product;
+    return {
+      ok: true,
+      product,
+    };
   } catch (err) {
     console.log(err);
   }
@@ -28,23 +35,39 @@ const getProductController = async (id) => {
   try {
     // Validate if product exists
     const product = await Product.findById(id);
-    if (!product) throw new Error('Producto no encontrado');
-    return product;
+    if (!product) {
+      return {
+        ok: false,
+        err: 'Producto no encontrado',
+      };
+    }
+    return {
+      ok: true,
+      product,
+    };
   } catch (err) {
     console.log(err);
   }
 };
 
-const updateProductController = async (id, input) => {
+const updateProductController = async (input) => {
   try {
     // Validate if product exists
-    const product = await Product.findById(id);
-    if (!product) throw new Error('Producto no encontrado');
+    const product = await Product.findById(input.id);
+    if (!product) {
+      return {
+        ok: false,
+        err: 'Producto no encontrado',
+      };
+    }
     // Update product
-    const newProduct = await Product.findByIdAndUpdate(id, input, {
+    const newProduct = await Product.findByIdAndUpdate(input.id, input, {
       new: true,
     });
-    return newProduct;
+    return {
+      ok: true,
+      product: newProduct,
+    };
   } catch (err) {
     console.log(err);
   }
@@ -53,9 +76,17 @@ const updateProductController = async (id, input) => {
 const deleteProductController = async (id) => {
   try {
     const product = await Product.findById(id);
-    if (!product) throw new Error('Producto no encontrado');
+    if (!product) {
+      return {
+        ok: false,
+        err: 'Producto no encontrado',
+      };
+    }
     await Product.findByIdAndRemove(id);
-    return 'Producto eliminado';
+    return {
+      ok: true,
+      product,
+    };
   } catch (err) {
     console.log(err);
   }

@@ -89,6 +89,17 @@ const typeDefs = gql`
     price: Float!
   }
 
+  input ProductUpdateInput {
+    id: ID!
+    name: String!
+    stock: Int!
+    price: Float!
+  }
+
+  input ProductIdInput {
+    id: ID!
+  }
+
   # inputs Client *****************************************
   input ClientInput {
     name: String!
@@ -96,6 +107,10 @@ const typeDefs = gql`
     company: String!
     phone: String
     email: String!
+  }
+
+  input ClientIdInput {
+    id: ID!
   }
 
   # inputs Order ******************************************
@@ -113,7 +128,7 @@ const typeDefs = gql`
 
   type Query {
     getAllUsers: [User]
-    getUser(token: String!): User
+    getUser: User
 
     # Product
     getAllProducts: [Product]
@@ -143,13 +158,13 @@ const typeDefs = gql`
 
     # Product
     createProduct(input: ProductInput): Product
-    updateProduct(id: ID!, input: ProductInput): Product
-    deleteProduct(id: ID!): String
+    updateProduct(input: ProductUpdateInput): Product
+    deleteProduct(id: ID!): Product
 
     # Client
     createClient(input: ClientInput): Client
     updateClient(id: ID!, input: ClientInput): Client
-    deleteClient(id: ID!): String
+    deleteClient(id: ID!): Client
 
     # Order
     createOrder(input: OrderInput): Order

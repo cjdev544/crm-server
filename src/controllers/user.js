@@ -9,24 +9,41 @@ const createUserController = async (input) => {
   // Formatted email
   const formattedEmail = email.toLowerCase();
   // Validate email
-  if (!validator.isEmail(formattedEmail))
-    throw new Error('Formato de correo incorrecto');
+  if (!validator.isEmail(formattedEmail)) {
+    return {
+      ok: false,
+      err: 'Formato de correo incorrecto',
+    };
+  }
 
   try {
     const user = await User.findOne({ email: formattedEmail });
     // Validate if user exist
-    if (user) throw new Error('El Correo ya se encuentra registrado');
+    if (user) {
+      return {
+        ok: false,
+        err: 'El correo ya se encuentra registrado',
+      };
+    }
     // Formatted email change before saving
     const newUser = new User(input);
     newUser.email = formattedEmail;
     // Password encrypt
     bcrypt.hash(password, 10, (err, hash) => {
-      if (err) throw new Error('Error al crear usuario. Intentalo de nuevo');
+      if (err) {
+        return {
+          ok: false,
+          err: 'Error al crear usuario. Intentalo de nuevo',
+        };
+      }
       newUser.password = hash;
       // Save user on Database
       newUser.save();
     });
-    return newUser;
+    return {
+      ok: true,
+      user: newUser,
+    };
   } catch (err) {
     console.log(err);
   }
@@ -38,22 +55,33 @@ const loginUserController = async (input) => {
   const formattedEmail = email.toLowerCase();
   try {
     // Validated email
-    if (!validator.isEmail(formattedEmail))
-      throw new Error('Formato de correo incorrecto');
+    if (!validator.isEmail(formattedEmail)) {
+      return {
+        ok: false,
+        err: 'Formato de correo incorrecto',
+      };
+    }
     // Validate if user exist
     const user = await User.findOne({ email: formattedEmail });
-    if (!user)
-      throw new Error(
-        'El correo no se encuentra registrado! Registrate para poder ingresar'
-      );
+    if (!user) {
+      return {
+        ok: false,
+        err:
+          'El correo no se encuentra registrado! Registrate para poder ingresar',
+      };
+    }
     // Compare passwords
-    bcrypt.compare(password, user.password, (err, res) => {
-      if (err)
-        throw new Error('El combinación de correo y contraseña no es correcta');
-    });
-    // Token generate
+    if (!(await bcrypt.compare(password, user.password))) {
+      return {
+        ok: false,
+        err: 'La combinacion de correo y contraseña no es correcta',
+      };
+    }
     const token = await jwtGenerator(user);
-    return { token };
+    return {
+      ok: true,
+      token,
+    };
   } catch (err) {
     console.log(err);
   }
@@ -68,18 +96,8 @@ const getAllUsersController = async () => {
   }
 };
 
-const getUserController = async (token) => {
-  try {
-    const user = await jwt.verify(token, process.env.PRIVATE_KEY);
-    return user;
-  } catch (err) {
-    console.log(err);
-  }
-};
-
 module.exports = {
   createUserController,
   loginUserController,
   getAllUsersController,
-  getUserController,
 };

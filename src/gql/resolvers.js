@@ -31,7 +31,6 @@ const {
   createUserController,
   loginUserController,
   getAllUsersController,
-  getUserController,
 } = require('../controllers/user');
 
 const resolvers = {
@@ -40,9 +39,8 @@ const resolvers = {
       const users = await getAllUsersController();
       return users;
     },
-    getUser: async (_, { token }) => {
-      const user = await getUserController(token);
-      return user;
+    getUser: (_, {}, context) => {
+      return context;
     },
 
     // Product ********************************************
@@ -52,7 +50,8 @@ const resolvers = {
     },
     getProduct: async (_, { id }) => {
       const product = await getProductController(id);
-      return product;
+      if (!product.ok) throw new Error(product.err);
+      return product.product;
     },
 
     // Client *********************************************
@@ -66,7 +65,8 @@ const resolvers = {
     },
     getClient: async (_, { id }, context) => {
       const client = await getClientController(id, context);
-      return client;
+      if (!client.ok) throw new Error(client.err);
+      return client.client;
     },
 
     // Order **********************************************
@@ -106,53 +106,64 @@ const resolvers = {
     // User ***********************************************
     createUser: async (_, { input }) => {
       const user = await createUserController(input);
-      return user;
+      if (!user.ok) throw new Error(user.err);
+      return user.user;
     },
     loginUser: async (_, { input }) => {
       const token = await loginUserController(input);
-      return token;
+      if (!token.ok) throw new Error(token.err);
+      return { token: token.token };
     },
 
     // Product ********************************************
     createProduct: async (_, { input }) => {
       const product = await createProductController(input);
-      return product;
+      if (!product.ok) throw new Error(product.err);
+      return product.product;
     },
-    updateProduct: async (_, { id, input }) => {
-      const product = await updateProductController(id, input);
-      return product;
+    updateProduct: async (_, { input }) => {
+      const product = await updateProductController(input);
+      if (!product.ok) throw new Error(product.err);
+      return product.product;
     },
     deleteProduct: async (_, { id }) => {
-      const message = await deleteProductController(id);
-      return message;
+      const product = await deleteProductController(id);
+      if (!product.ok) throw new Error(product.err);
+      return product.product;
     },
 
     // Client *********************************************
     createClient: async (_, { input }, context) => {
       const client = await createClientController(input, context);
-      return client;
+      if (!client.ok) throw new Error(client.err);
+      return client.client;
     },
     updateClient: async (_, { id, input }, context) => {
       const client = await updateClientController(id, input, context);
-      return client;
+      if (!client.ok) throw new Error(client.err);
+      return client.client;
     },
     deleteClient: async (_, { id }, context) => {
       const message = await deleteClientController(id, context);
-      return message;
+      if (!message.ok) throw new Error(message.err);
+      return message.res;
     },
 
     // Order **********************************************
     createOrder: async (_, { input }, context) => {
       const order = await createOrderController(input, context);
-      return order;
+      if (!order.ok) throw new Error(order.err);
+      return order.order;
     },
     updateOrder: async (_, { id, input }, context) => {
       const order = await updateOrderController(id, input, context);
-      return order;
+      if (!order.ok) throw new Error(order.err);
+      return order.order;
     },
     deleteOrder: async (_, { id }, context) => {
       const message = await deleteOrderController(id, context);
-      return message;
+      if (!message.ok) throw new Error(message.err);
+      return message.msg;
     },
   },
 };

@@ -7,22 +7,42 @@ const createOrderController = async (input, context) => {
   try {
     // Validated if clieent exist
     const client = await Client.findById(input.clientId);
-    if (!client) throw new Error('Cliente no encontrado');
+    if (!client) {
+      return {
+        ok: false,
+        err: 'Cliente no encontrado',
+      };
+    }
     // Validate client is the user
-    if (client.sellerId.toString() !== context.id)
-      throw new Error('El cliente pertenece a otro vendedor');
+    if (client.sellerId.toString() !== context.id) {
+      return {
+        ok: false,
+        err: 'Usuario no autorizado',
+      };
+    }
     // Validate product
     for await (const orderProduct of input.order) {
       // Validate product exist
       const product = await Product.findById(orderProduct.id);
-      if (!product) throw new Error('Producto no encontrado');
+      if (!product) {
+        return {
+          ok: false,
+          err: 'Producto no encontrado',
+        };
+      }
       // Validate if there are products in stock
-      if (orderProduct.amount <= 0)
-        throw new Error('El pedido debe ser mayor a 0');
-      if (orderProduct.amount > product.stock)
-        throw new Error(
-          `No se puede crear el pedido de '${product.name}'solo hay ${product.stock} en stock`
-        );
+      if (orderProduct.amount <= 0) {
+        return {
+          ok: false,
+          err: 'El pedido debe ser mayor a 0',
+        };
+      }
+      if (orderProduct.amount > product.stock) {
+        return {
+          ok: false,
+          err: `No se puede crear el pedido de '${product.name}'solo hay ${product.stock} en stock`,
+        };
+      }
     }
     // Subtract order from stock before saving
     for await (const orderProduct of input.order) {
@@ -35,7 +55,10 @@ const createOrderController = async (input, context) => {
     newOrder.clientId = client.id;
     newOrder.userId = context.id;
     await newOrder.save();
-    return newOrder;
+    return {
+      ok: true,
+      order: newOrder,
+    };
   } catch (err) {
     console.log(err);
   }
@@ -63,11 +86,23 @@ const getOrderController = async (id, context) => {
   try {
     // Validate order exist
     const order = await Order.findById(id);
-    if (!order) throw new Error('Pedido no encontrado');
+    if (!order) {
+      return {
+        ok: false,
+        err: 'Pedido no encontrado',
+      };
+    }
     // Validates if order belongs to the active user
-    if (order.userId.toString() !== context.id)
-      throw new Error('Usuario no autorizado');
-    return order;
+    if (order.userId.toString() !== context.id) {
+      return {
+        ok: false,
+        err: 'Usuario no autorizado',
+      };
+    }
+    return {
+      ok: true,
+      order,
+    };
   } catch (err) {
     console.log(err);
   }
@@ -77,13 +112,27 @@ const updateOrderController = async (id, input, context) => {
   try {
     // Validate order exist
     const order = await Order.findById(id);
-    if (!order) throw new Error('Pedido no encontrado');
+    if (!order) {
+      return {
+        ok: false,
+        err: 'Pedido no encontrado',
+      };
+    }
     // Validat client exist
     const client = await Client.findById(order.clientId);
-    if (!client) throw new Error('Cliente no encontrado');
+    if (!client) {
+      return {
+        ok: false,
+        err: 'Cliente no encontrado',
+      };
+    }
     // Validates if order belongs to the active user
-    if (order.userId.toString() !== context.id)
-      throw new Error('Usuario no autorizado');
+    if (order.userId.toString() !== context.id) {
+      return {
+        ok: false,
+        err: 'Usuario no autorizado',
+      };
+    }
     // Add or subtract according to the order change
     // helpers function
     updateOrderChange(input.order, order.order)
@@ -92,7 +141,10 @@ const updateOrderController = async (id, input, context) => {
         const updateOrder = await Order.findByIdAndUpdate(id, input, {
           new: true,
         });
-        return updateOrder;
+        return {
+          ok: true,
+          order: updateOrder,
+        };
       })
       .catch((err) => console.log(err));
   } catch (err) {
@@ -104,15 +156,32 @@ const deleteOrderController = async (id, context) => {
   try {
     // Validate order exist
     const order = await Order.findById(id);
-    if (!order) throw new Error('Pedido no encontrado');
+    if (!order) {
+      return {
+        ok: false,
+        err: 'Pedido no encontrado',
+      };
+    }
     // Validat client exist
     const client = await Client.findById(order.clientId);
-    if (!client) throw new Error('Cliente no encontrado');
+    if (!client) {
+      return {
+        ok: false,
+        err: 'Cliente no encontrado',
+      };
+    }
     // Validates if order belongs to the active user
-    if (order.userId.toString() !== context.id)
-      throw new Error('Usuario no autorizado');
+    if (order.userId.toString() !== context.id) {
+      return {
+        ok: false,
+        err: 'Usuario no autorizado',
+      };
+    }
     await Order.findByIdAndRemove(id);
-    return 'Pedido eliminado';
+    return {
+      ok: true,
+      msg: 'Pedido eliminado',
+    };
   } catch (err) {
     console.log(err);
   }
